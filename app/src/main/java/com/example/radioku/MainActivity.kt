@@ -231,20 +231,24 @@ fun RadioKuApp(
                         modifier = Modifier.height(16.dp)
                     )
 
-                    Button(
-                        onClick = onPlayPause,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
+            Button(
+                 onClick = onPlayPause,
+                 modifier = Modifier.fillMaxWidth(),
+                 colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                 containerColor = androidx.compose.ui.graphics.Color(0xFF2E7D32),
+                 contentColor = androidx.compose.ui.graphics.Color.White
+    )
+) {
 
-                        Text(
-                            text = if (isPlaying) {
-                                "⏸ PAUSE"
-                            } else {
-                                "▶ PLAY"
-                            },
-                            fontSize = 18.sp
-                        )
-                    }
+    Text(
+        text = if (isPlaying) {
+            "⏸ PAUSE"
+        } else {
+            "▶ PLAY"
+        },
+        fontSize = 18.sp
+    )
+}
                 }
             }
 
