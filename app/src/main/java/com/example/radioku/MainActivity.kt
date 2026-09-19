@@ -7,127 +7,132 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.MediaItem
-import androidx.media3.session.MediaController
-import androidx.media3.session.SessionToken
-import com.google.common.util.concurrent.MoreExecutors
+import androidx.compose.ui.unit.sp
 
 class MainActivity : ComponentActivity() {
-
-    private var controller by mutableStateOf<MediaController?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val sessionToken =
-            SessionToken(this, android.content.ComponentName(this, PlaybackService::class.java))
-
-        val controllerFuture =
-            MediaController.Builder(this, sessionToken).buildAsync()
-
-        controllerFuture.addListener(
-            {
-                controller = controllerFuture.get()
-
-                setContent {
-                    RadioScreen(controller)
-                }
-            },
-            MoreExecutors.directExecutor()
-        )
-    }
-
-    override fun onDestroy() {
-        controller?.release()
-        controller = null
-
-        super.onDestroy()
+        setContent {
+            RadioKuApp()
+        }
     }
 }
 
-@androidx.compose.runtime.Composable
-fun RadioScreen(controller: MediaController?) {
+@Composable
+fun RadioKuApp() {
 
-    var isPlaying by androidx.compose.runtime.remember {
+    var isPlaying by remember {
         mutableStateOf(false)
     }
 
-    DisposableEffect(controller) {
+    MaterialTheme {
 
-        val listener = object : androidx.media3.common.Player.Listener {
-
-            override fun onIsPlayingChanged(isPlayingNow: Boolean) {
-                isPlaying = isPlayingNow
-            }
-        }
-
-        controller?.addListener(listener)
-
-        onDispose {
-            controller?.removeListener(listener)
-        }
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-
-        Text(
-            text = "📻 RadioKu",
-            style = MaterialTheme.typography.headlineLarge
-        )
-
-        Spacer(
-            modifier = Modifier.height(16.dp)
-        )
-
-        Text(
-            text = "Radio Streaming",
-            style = MaterialTheme.typography.bodyLarge
-        )
-
-        Spacer(
-            modifier = Modifier.height(32.dp)
-        )
-
-        Button(
-            onClick = {
-
-                controller?.let {
-
-                    if (it.isPlaying) {
-                        it.pause()
-                    } else {
-                        it.play()
-                    }
-                }
-
-            }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
 
             Text(
-                text = if (isPlaying) {
-                    "⏸ Pause"
-                } else {
-                    "▶ Play"
-                }
+                text = "RADIOKU",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold
             )
+
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
+
+            Text(
+                text = "Radio Streaming Indonesia",
+                fontSize = 16.sp
+            )
+
+            Spacer(
+                modifier = Modifier.height(32.dp)
+            )
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp)
+            ) {
+
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+                    Text(
+                        text = "📻",
+                        fontSize = 48.sp
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(12.dp)
+                    )
+
+                    Text(
+                        text = "ELSHINTA",
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(8.dp)
+                    )
+
+                    Text(
+                        text = if (isPlaying) {
+                            "● Sedang Mengudara"
+                        } else {
+                            "Siap diputar"
+                        },
+                        fontSize = 16.sp
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(24.dp)
+                    )
+
+                    Button(
+                        onClick = {
+                            isPlaying = !isPlaying
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+
+                        Text(
+                            text = if (isPlaying) {
+                                "⏸ PAUSE"
+                            } else {
+                                "▶ PLAY"
+                            },
+                            fontSize = 18.sp
+                        )
+                    }
+                }
+            }
         }
     }
 }
