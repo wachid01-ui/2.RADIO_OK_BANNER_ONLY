@@ -18,20 +18,28 @@ class PlaybackService : MediaSessionService() {
             .setHandleAudioBecomingNoisy(true)
             .build()
 
+        mediaSession = MediaSession.Builder(this, player)
+            .build()
+    }
+
+    fun playRadio(
+        radioName: String,
+        radioUrl: String
+    ) {
+
         val mediaItem = MediaItem.Builder()
-            .setUri(RADIO_URL)
+            .setUri(radioUrl)
             .setMediaMetadata(
                 MediaMetadata.Builder()
-                    .setTitle("RadioKu")
-                    .setArtist("Radio Streaming")
+                    .setTitle(radioName)
+                    .setArtist("RadioKu")
                     .build()
             )
             .build()
 
         player.setMediaItem(mediaItem)
-
-        mediaSession = MediaSession.Builder(this, player)
-            .build()
+        player.prepare()
+        player.play()
     }
 
     override fun onGetSession(
@@ -47,9 +55,4 @@ class PlaybackService : MediaSessionService() {
 
         super.onDestroy()
     }
-
-    companion object {
-        const val RADIO_URL =
-            "https://stream-ssl.arenastreaming.com:8000/jakarta"
-    }
-}
+}    
