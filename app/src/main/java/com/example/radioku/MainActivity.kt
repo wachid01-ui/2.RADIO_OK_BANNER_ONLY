@@ -265,18 +265,24 @@ fun RadioKuApp(
             radioStations.forEach { radio ->
 
                 Button(
-                    onClick = {
-                        onRadioSelected(radio)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                ) {
-
-                    Text(
-                        text = radio.name
-                    )
-                }
+    onClick = {
+        onRadioSelected(radio)
+    },
+    modifier = Modifier
+        .fillMaxWidth()
+        .padding(vertical = 4.dp),
+    colors = if (radio == selectedRadio) {
+        androidx.compose.material3.ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary
+        )
+    } else {
+        androidx.compose.material3.ButtonDefaults.buttonColors()
+    }
+) {
+    Text(
+        text = radio.name
+    )
+}
             }
         }
     }
