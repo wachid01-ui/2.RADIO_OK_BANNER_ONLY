@@ -24,9 +24,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.MoreExecutors
+
+data class RadioStation(
+    val name: String,
+    val streamUrl: String
+)
 
 class MainActivity : ComponentActivity() {
 
@@ -34,16 +41,38 @@ class MainActivity : ComponentActivity() {
 
     private var isPlaying by mutableStateOf(false)
 
+    private var selectedRadio by mutableStateOf(
+        RadioStation(
+            "ELSHINTA",
+            "https://stream-ssl.arenastreaming.com:8000/jakarta"
+        )
+    )
+
+    private val radioStations = listOf(
+        RadioStation(
+            "ELSHINTA",
+            "https://stream-ssl.arenastreaming.com:8000/jakarta"
+        ),
+        RadioStation(
+            "SUARA SURABAYA",
+            "https://c5.siar.us/proxy/ssfm/stream"
+        ),
+        RadioStation(
+            "SUARA GIRI FM",
+            "http://streaming.girifm.com:8010/"
+        )
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val sessionToken = SessionToken(
-    this,
-    android.content.ComponentName(
-        this,
-        PlaybackService::class.java
-    )
-)
+            this,
+            android.content.ComponentName(
+                this,
+                PlaybackService::class.java
+            )
+        )
 
         val controllerFuture =
             MediaController.Builder(this, sessionToken)
@@ -53,14 +82,23 @@ class MainActivity : ComponentActivity() {
             {
                 mediaController = controllerFuture.get()
 
-                isPlaying = mediaController?.isPlaying == true
+                isPlaying =
+                    mediaController?.isPlaying == true
             },
             MoreExecutors.directExecutor()
         )
 
         setContent {
             RadioKuApp(
+                radioStations = radioStations,
+                selectedRadio = selectedRadio,
                 isPlaying = isPlaying,
+
+                onRadioSelected = { radio ->
+                    selectedRadio = radio
+                    playRadio(radio)
+                },
+
                 onPlayPause = {
                     togglePlayback()
                 }
@@ -68,15 +106,38 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun playRadio(radio: RadioStation) {
+
+        val controller = mediaController ?: return
+
+        val mediaItem = MediaItem.Builder()
+            .setUri(radio.streamUrl)
+            .setMediaMetadata(
+                MediaMetadata.Builder()
+                    .setTitle(radio.name)
+                    .setArtist("RadioKu")
+                    .build()
+            )
+            .build()
+
+        controller.setMediaItem(mediaItem)
+        controller.prepare()
+        controller.play()
+
+        isPlaying = true
+    }
+
     private fun togglePlayback() {
 
         val controller = mediaController ?: return
 
         if (controller.isPlaying) {
+
             controller.pause()
             isPlaying = false
+
         } else {
-            controller.prepare()
+
             controller.play()
             isPlaying = true
         }
@@ -93,7 +154,10 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun RadioKuApp(
+    radioStations: List<RadioStation>,
+    selectedRadio: RadioStation,
     isPlaying: Boolean,
+    onRadioSelected: (RadioStation) -> Unit,
     onPlayPause: () -> Unit
 ) {
 
@@ -104,7 +168,7 @@ fun RadioKuApp(
                 .fillMaxSize()
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Top
         ) {
 
             Text(
@@ -123,7 +187,7 @@ fun RadioKuApp(
             )
 
             Spacer(
-                modifier = Modifier.height(32.dp)
+                modifier = Modifier.height(24.dp)
             )
 
             Card(
@@ -132,7 +196,7 @@ fun RadioKuApp(
             ) {
 
                 Column(
-                    modifier = Modifier.padding(24.dp),
+                    modifier = Modifier.padding(20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
 
@@ -142,12 +206,12 @@ fun RadioKuApp(
                     )
 
                     Spacer(
-                        modifier = Modifier.height(12.dp)
+                        modifier = Modifier.height(8.dp)
                     )
 
                     Text(
-                        text = "ELSHINTA",
-                        fontSize = 26.sp,
+                        text = selectedRadio.name,
+                        fontSize = 24.sp,
                         fontWeight = FontWeight.Bold
                     )
 
@@ -160,12 +224,11 @@ fun RadioKuApp(
                             "● Sedang Mengudara"
                         } else {
                             "Siap diputar"
-                        },
-                        fontSize = 16.sp
+                        }
                     )
 
                     Spacer(
-                        modifier = Modifier.height(24.dp)
+                        modifier = Modifier.height(16.dp)
                     )
 
                     Button(
@@ -182,6 +245,37 @@ fun RadioKuApp(
                             fontSize = 18.sp
                         )
                     }
+                }
+            }
+
+            Spacer(
+                modifier = Modifier.height(24.dp)
+            )
+
+            Text(
+                text = "Pilih Radio",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(
+                modifier = Modifier.height(12.dp)
+            )
+
+            radioStations.forEach { radio ->
+
+                Button(
+                    onClick = {
+                        onRadioSelected(radio)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                ) {
+
+                    Text(
+                        text = radio.name
+                    )
                 }
             }
         }
