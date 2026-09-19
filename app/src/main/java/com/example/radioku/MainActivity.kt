@@ -38,9 +38,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val sessionToken = SessionToken(
-            this,
-            PlaybackService::class.java
-        )
+    this,
+    android.content.ComponentName(
+        this,
+        PlaybackService::class.java
+    )
+)
 
         val controllerFuture =
             MediaController.Builder(this, sessionToken)
