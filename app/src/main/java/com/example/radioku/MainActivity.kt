@@ -273,10 +273,14 @@ fun RadioKuApp(
         .padding(vertical = 4.dp),
     colors = if (radio == selectedRadio) {
         androidx.compose.material3.ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary
+            containerColor = androidx.compose.ui.graphics.Color(0xFF2E7D32),
+            contentColor = androidx.compose.ui.graphics.Color.White
         )
     } else {
-        androidx.compose.material3.ButtonDefaults.buttonColors()
+        androidx.compose.material3.ButtonDefaults.buttonColors(
+            containerColor = androidx.compose.ui.graphics.Color(0xFF757575),
+            contentColor = androidx.compose.ui.graphics.Color.White
+        )
     }
 ) {
     Text(
