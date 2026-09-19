@@ -59,8 +59,8 @@ class MainActivity : ComponentActivity() {
         ),
         RadioStation(
             "SUARA GIRI FM",
-            "http://streaming.girifm.com:8010/"
-        )
+            "https://streaming.girifm.com:8010/;stream.mp3"
+)
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
