@@ -18,31 +18,81 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.media3.session.MediaController
+import androidx.media3.session.SessionToken
+import com.google.common.util.concurrent.MoreExecutors
 
 class MainActivity : ComponentActivity() {
+
+    private var mediaController: MediaController? = null
+
+    private var isPlaying by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val sessionToken = SessionToken(
+            this,
+            PlaybackService::class.java
+        )
+
+        val controllerFuture =
+            MediaController.Builder(this, sessionToken)
+                .buildAsync()
+
+        controllerFuture.addListener(
+            {
+                mediaController = controllerFuture.get()
+
+                isPlaying = mediaController?.isPlaying == true
+            },
+            MoreExecutors.directExecutor()
+        )
+
         setContent {
-            RadioKuApp()
+            RadioKuApp(
+                isPlaying = isPlaying,
+                onPlayPause = {
+                    togglePlayback()
+                }
+            )
         }
+    }
+
+    private fun togglePlayback() {
+
+        val controller = mediaController ?: return
+
+        if (controller.isPlaying) {
+            controller.pause()
+            isPlaying = false
+        } else {
+            controller.prepare()
+            controller.play()
+            isPlaying = true
+        }
+    }
+
+    override fun onDestroy() {
+
+        mediaController?.release()
+        mediaController = null
+
+        super.onDestroy()
     }
 }
 
 @Composable
-fun RadioKuApp() {
-
-    var isPlaying by remember {
-        mutableStateOf(false)
-    }
+fun RadioKuApp(
+    isPlaying: Boolean,
+    onPlayPause: () -> Unit
+) {
 
     MaterialTheme {
 
@@ -116,9 +166,7 @@ fun RadioKuApp() {
                     )
 
                     Button(
-                        onClick = {
-                            isPlaying = !isPlaying
-                        },
+                        onClick = onPlayPause,
                         modifier = Modifier.fillMaxWidth()
                     ) {
 
