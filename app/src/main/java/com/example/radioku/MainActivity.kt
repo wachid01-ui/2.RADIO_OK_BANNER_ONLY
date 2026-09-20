@@ -1,3 +1,4 @@
+```kotlin
 package com.example.radioku
 
 import android.os.Bundle
@@ -12,7 +13,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -29,6 +33,9 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.MoreExecutors
+import org.json.JSONArray
+import java.net.HttpURLConnection
+import java.net.URL
 
 data class RadioStation(
     val name: String,
@@ -43,25 +50,18 @@ class MainActivity : ComponentActivity() {
 
     private var selectedRadio by mutableStateOf(
         RadioStation(
-            "ELSHINTA",
-            "https://stream-ssl.arenastreaming.com:8000/jakarta"
+            "Memuat radio...",
+            ""
         )
     )
 
-    private val radioStations = listOf(
-        RadioStation(
-            "ELSHINTA",
-            "https://stream-ssl.arenastreaming.com:8000/jakarta"
-        ),
-        RadioStation(
-            "SUARA SURABAYA",
-            "https://c5.siar.us/proxy/ssfm/stream"
-        ),
-        RadioStation(
-            "SUARA GIRI FM",
-            "https://streaming.girifm.com:8010/;stream.mp3"
-)
+    private var radioStations by mutableStateOf(
+        listOf<RadioStation>()
     )
+
+    private var isLoading by mutableStateOf(true)
+
+    private var errorMessage by mutableStateOf("")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,10 +89,13 @@ class MainActivity : ComponentActivity() {
         )
 
         setContent {
+
             RadioKuApp(
                 radioStations = radioStations,
                 selectedRadio = selectedRadio,
                 isPlaying = isPlaying,
+                isLoading = isLoading,
+                errorMessage = errorMessage,
 
                 onRadioSelected = { radio ->
                     selectedRadio = radio
@@ -104,24 +107,143 @@ class MainActivity : ComponentActivity() {
                 }
             )
         }
+
+        loadIndonesianRadios()
+    }
+
+    private fun loadIndonesianRadios() {
+
+        Thread {
+
+            try {
+
+                val url = URL(
+                    "https://de1.api.radio-browser.info/json/stations/bycountrycodeexact/ID?hidebroken=true&limit=500"
+                )
+
+                val connection =
+                    url.openConnection() as HttpURLConnection
+
+                connection.requestMethod = "GET"
+
+                connection.connectTimeout = 10000
+                connection.readTimeout = 15000
+
+                connection.setRequestProperty(
+                    "User-Agent",
+                    "RadioKu/1.0 Android"
+                )
+
+                val responseCode =
+                    connection.responseCode
+
+                if (responseCode != HttpURLConnection.HTTP_OK) {
+
+                    throw Exception(
+                        "Server mengembalikan kode $responseCode"
+                    )
+                }
+
+                val response =
+                    connection.inputStream
+                        .bufferedReader()
+                        .use { it.readText() }
+
+                connection.disconnect()
+
+                val jsonArray =
+                    JSONArray(response)
+
+                val stations =
+                    mutableListOf<RadioStation>()
+
+                for (i in 0 until jsonArray.length()) {
+
+                    val station =
+                        jsonArray.getJSONObject(i)
+
+                    val name =
+                        station.optString("name")
+
+                    val streamUrl =
+                        station.optString("url_resolved")
+                            .ifEmpty {
+                                station.optString("url")
+                            }
+
+                    if (
+                        name.isNotBlank() &&
+                        streamUrl.isNotBlank()
+                    ) {
+
+                        stations.add(
+                            RadioStation(
+                                name = name,
+                                streamUrl = streamUrl
+                            )
+                        )
+                    }
+                }
+
+                runOnUiThread {
+
+                    if (stations.isNotEmpty()) {
+
+                        radioStations = stations
+
+                        selectedRadio =
+                            stations.first()
+
+                        isLoading = false
+                        errorMessage = ""
+
+                    } else {
+
+                        isLoading = false
+
+                        errorMessage =
+                            "Tidak ada stasiun radio Indonesia yang ditemukan."
+                    }
+                }
+
+            } catch (e: Exception) {
+
+                runOnUiThread {
+
+                    isLoading = false
+
+                    errorMessage =
+                        "Gagal mengambil daftar radio: ${e.message}"
+                }
+            }
+
+        }.start()
     }
 
     private fun playRadio(radio: RadioStation) {
 
-        val controller = mediaController ?: return
+        val controller =
+            mediaController ?: return
 
-        val mediaItem = MediaItem.Builder()
-            .setUri(radio.streamUrl)
-            .setMediaMetadata(
-                MediaMetadata.Builder()
-                    .setTitle(radio.name)
-                    .setArtist("RadioKu")
-                    .build()
-            )
-            .build()
+        if (radio.streamUrl.isBlank()) {
+            return
+        }
+
+        val mediaItem =
+            MediaItem.Builder()
+                .setUri(radio.streamUrl)
+                .setMediaMetadata(
+                    MediaMetadata.Builder()
+                        .setTitle(radio.name)
+                        .setArtist("RadioKu")
+                        .build()
+                )
+                .build()
 
         controller.setMediaItem(mediaItem)
+
         controller.prepare()
+
         controller.play()
 
         isPlaying = true
@@ -129,16 +251,19 @@ class MainActivity : ComponentActivity() {
 
     private fun togglePlayback() {
 
-        val controller = mediaController ?: return
+        val controller =
+            mediaController ?: return
 
         if (controller.isPlaying) {
 
             controller.pause()
+
             isPlaying = false
 
         } else {
 
             controller.play()
+
             isPlaying = true
         }
     }
@@ -146,6 +271,7 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
 
         mediaController?.release()
+
         mediaController = null
 
         super.onDestroy()
@@ -157,6 +283,8 @@ fun RadioKuApp(
     radioStations: List<RadioStation>,
     selectedRadio: RadioStation,
     isPlaying: Boolean,
+    isLoading: Boolean,
+    errorMessage: String,
     onRadioSelected: (RadioStation) -> Unit,
     onPlayPause: () -> Unit
 ) {
@@ -231,24 +359,26 @@ fun RadioKuApp(
                         modifier = Modifier.height(16.dp)
                     )
 
-            Button(
-                 onClick = onPlayPause,
-                 modifier = Modifier.fillMaxWidth(),
-                 colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                 containerColor = androidx.compose.ui.graphics.Color(0xFF2E7D32),
-                 contentColor = androidx.compose.ui.graphics.Color.White
-    )
-) {
+                    Button(
+                        onClick = onPlayPause,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor =
+                                Color(0xFF2E7D32),
+                            contentColor =
+                                Color.White
+                        )
+                    ) {
 
-    Text(
-        text = if (isPlaying) {
-            "⏸ PAUSE"
-        } else {
-            "▶ PLAY"
-        },
-        fontSize = 18.sp
-    )
-}
+                        Text(
+                            text = if (isPlaying) {
+                                "⏸ PAUSE"
+                            } else {
+                                "▶ PLAY"
+                            },
+                            fontSize = 18.sp
+                        )
+                    }
                 }
             }
 
@@ -257,7 +387,7 @@ fun RadioKuApp(
             )
 
             Text(
-                text = "Pilih Radio",
+                text = "Pilih Radio Indonesia",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -266,32 +396,65 @@ fun RadioKuApp(
                 modifier = Modifier.height(12.dp)
             )
 
-            radioStations.forEach { radio ->
+            if (isLoading) {
 
-                Button(
-    onClick = {
-        onRadioSelected(radio)
-    },
-    modifier = Modifier
-        .fillMaxWidth()
-        .padding(vertical = 4.dp),
-    colors = if (radio == selectedRadio) {
-        androidx.compose.material3.ButtonDefaults.buttonColors(
-            containerColor = androidx.compose.ui.graphics.Color(0xFF2E7D32),
-            contentColor = androidx.compose.ui.graphics.Color.White
-        )
-    } else {
-        androidx.compose.material3.ButtonDefaults.buttonColors(
-            containerColor = androidx.compose.ui.graphics.Color(0xFF757575),
-            contentColor = androidx.compose.ui.graphics.Color.White
-        )
-    }
-) {
-    Text(
-        text = radio.name
-    )
-}
+                CircularProgressIndicator()
+
+                Spacer(
+                    modifier = Modifier.height(12.dp)
+                )
+
+                Text(
+                    text = "Memuat daftar radio Indonesia..."
+                )
+
+            } else if (errorMessage.isNotEmpty()) {
+
+                Text(
+                    text = errorMessage
+                )
+
+            } else {
+
+                radioStations.forEach { radio ->
+
+                    Button(
+                        onClick = {
+                            onRadioSelected(radio)
+                        },
+
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+
+                        colors =
+                            if (radio == selectedRadio) {
+
+                                ButtonDefaults.buttonColors(
+                                    containerColor =
+                                        Color(0xFF2E7D32),
+                                    contentColor =
+                                        Color.White
+                                )
+
+                            } else {
+
+                                ButtonDefaults.buttonColors(
+                                    containerColor =
+                                        Color(0xFF757575),
+                                    contentColor =
+                                        Color.White
+                                )
+                            }
+                    ) {
+
+                        Text(
+                            text = radio.name
+                        )
+                    }
+                }
             }
         }
     }
 }
+```
