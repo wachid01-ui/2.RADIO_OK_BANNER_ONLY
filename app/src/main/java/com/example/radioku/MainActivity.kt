@@ -1,5 +1,4 @@
 package com.example.radioku
-import android.content.Context
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
@@ -66,23 +65,8 @@ class MainActivity : ComponentActivity() {
 
     private var errorMessage by mutableStateOf("")
     private var searchText by mutableStateOf("")
-    private val favoritePreferences by lazy {
-         getSharedPreferences(
-          "radio_favorites",
-        Context.MODE_PRIVATE
-    )
-}
-
-private var favoriteRadios by mutableStateOf(
-    setOf<String>()
-)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-    favoriteRadios =
-        favoritePreferences
-           .getStringSet("favorites", emptySet())
-           ?.toSet()
-           ?: emptySet()
 
         val sessionToken = SessionToken(
             this,
@@ -118,10 +102,7 @@ private var favoriteRadios by mutableStateOf(
                 onSearchTextChange = {
                       searchText = it
         },
-           favoriteRadios = favoriteRadios,
-            onFavoriteClick = {
-             toggleFavorite(it)
-},
+
                 onRadioSelected = { radio ->
                     selectedRadio = radio
                     playRadio(radio)
@@ -181,19 +162,7 @@ private var favoriteRadios by mutableStateOf(
 
                 val stations =
                     mutableListOf<RadioStation>()
-                stations.add(
-                     RadioStation(
-                        name = "SUARA SURABAYA",
-                          streamUrl = "https://c5.siar.us/proxy/ssfm/stream"
-    )
-)
 
-                stations.add(
-                    RadioStation(
-                       name = "WIJAYA FM",
-                          streamUrl = "http://wijayafm.onlivestreaming.net:9880/stream"
-    )
-)
                 for (i in 0 until jsonArray.length()) {
 
                     val station =
@@ -308,27 +277,7 @@ private var favoriteRadios by mutableStateOf(
             isPlaying = true
         }
     }
-   private fun toggleFavorite(radio: RadioStation) {
 
-    val newFavorites =
-        favoriteRadios.toMutableSet()
-
-    if (newFavorites.contains(radio.streamUrl)) {
-        newFavorites.remove(radio.streamUrl)
-    } else {
-        newFavorites.add(radio.streamUrl)
-    }
-
-    favoriteRadios = newFavorites
-
-    favoritePreferences
-        .edit()
-        .putStringSet(
-            "favorites",
-            newFavorites
-        )
-        .apply()
-}
     override fun onDestroy() {
 
         mediaController?.release()
@@ -348,11 +297,8 @@ fun RadioKuApp(
     errorMessage: String,
     searchText: String,
     onSearchTextChange: (String) -> Unit,
-    favoriteRadios: Set<String>,
-    onFavoriteClick: (RadioStation) -> Unit,
     onRadioSelected: (RadioStation) -> Unit,
     onPlayPause: () -> Unit
-)
 )
 {
 
@@ -514,64 +460,10 @@ Spacer(
 
         items(filteredRadioStations) { radio ->
 
-            items(filteredRadioStations) { radio ->
-
-    androidx.compose.foundation.layout.Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-
-        Button(
-            onClick = {
-                onRadioSelected(radio)
-            },
-            modifier = Modifier.weight(1f),
-            colors =
-                if (radio == selectedRadio) {
-
-                    ButtonDefaults.buttonColors(
-                        containerColor =
-                            Color(0xFF2E7D32),
-                        contentColor =
-                            Color.White
-                    )
-
-                } else {
-
-                    ButtonDefaults.buttonColors(
-                        containerColor =
-                            Color(0xFF757575),
-                        contentColor =
-                            Color.White
-                    )
-                }
-        ) {
-
-            Text(
-                text = radio.name
-            )
-        }
-
-        Button(
-            onClick = {
-                onFavoriteClick(radio)
-            }
-        ) {
-
-            Text(
-                text =
-                    if (favoriteRadios.contains(radio.streamUrl)) {
-                        "♥"
-                    } else {
-                        "♡"
-                    },
-                fontSize = 24.sp
-            )
-        }
-    }
-}
+            Button(
+                onClick = {
+                    onRadioSelected(radio)
+                },
 
                 modifier = Modifier
                     .fillMaxWidth()
