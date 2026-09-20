@@ -118,7 +118,10 @@ private var favoriteRadios by mutableStateOf(
                 onSearchTextChange = {
                       searchText = it
         },
-
+           favoriteRadios = favoriteRadios,
+            onFavoriteClick = {
+             toggleFavorite(it)
+},
                 onRadioSelected = { radio ->
                     selectedRadio = radio
                     playRadio(radio)
@@ -345,8 +348,11 @@ fun RadioKuApp(
     errorMessage: String,
     searchText: String,
     onSearchTextChange: (String) -> Unit,
+    favoriteRadios: Set<String>,
+    onFavoriteClick: (RadioStation) -> Unit,
     onRadioSelected: (RadioStation) -> Unit,
     onPlayPause: () -> Unit
+)
 )
 {
 
@@ -508,10 +514,64 @@ Spacer(
 
         items(filteredRadioStations) { radio ->
 
-            Button(
-                onClick = {
-                    onRadioSelected(radio)
-                },
+            items(filteredRadioStations) { radio ->
+
+    androidx.compose.foundation.layout.Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        Button(
+            onClick = {
+                onRadioSelected(radio)
+            },
+            modifier = Modifier.weight(1f),
+            colors =
+                if (radio == selectedRadio) {
+
+                    ButtonDefaults.buttonColors(
+                        containerColor =
+                            Color(0xFF2E7D32),
+                        contentColor =
+                            Color.White
+                    )
+
+                } else {
+
+                    ButtonDefaults.buttonColors(
+                        containerColor =
+                            Color(0xFF757575),
+                        contentColor =
+                            Color.White
+                    )
+                }
+        ) {
+
+            Text(
+                text = radio.name
+            )
+        }
+
+        Button(
+            onClick = {
+                onFavoriteClick(radio)
+            }
+        ) {
+
+            Text(
+                text =
+                    if (favoriteRadios.contains(radio.streamUrl)) {
+                        "♥"
+                    } else {
+                        "♡"
+                    },
+                fontSize = 24.sp
+            )
+        }
+    }
+}
 
                 modifier = Modifier
                     .fillMaxWidth()
