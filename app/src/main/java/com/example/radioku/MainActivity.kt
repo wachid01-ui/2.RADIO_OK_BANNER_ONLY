@@ -1,4 +1,3 @@
-```kotlin
 package com.example.radioku
 
 import android.os.Bundle
@@ -457,4 +456,3 @@ fun RadioKuApp(
         }
     }
 }
-```
