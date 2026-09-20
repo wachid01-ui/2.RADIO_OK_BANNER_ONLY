@@ -167,22 +167,26 @@ class MainActivity : ComponentActivity() {
 
                     val streamUrl =
                         station.optString("url_resolved")
-                            .ifEmpty {
-                                station.optString("url")
-                            }
+                           .ifEmpty {
+                               station.optString("url")
+        }
 
-                    if (
-                        name.isNotBlank() &&
-                        streamUrl.isNotBlank()
-                    ) {
+                  val lastCheckOk =
+                      station.optInt("lastcheckok", 0)
 
-                        stations.add(
-                            RadioStation(
-                                name = name,
-                                streamUrl = streamUrl
-                            )
-                        )
-                    }
+                  if (
+                     name.isNotBlank() &&
+                     streamUrl.isNotBlank() &&
+                     lastCheckOk == 1
+                 ) {
+
+                   stations.add(
+                     RadioStation(
+                      name = name,
+                      streamUrl = streamUrl
+                     )
+                 )
+             }
                 }
 
                 runOnUiThread {
