@@ -162,7 +162,19 @@ class MainActivity : ComponentActivity() {
 
                 val stations =
                     mutableListOf<RadioStation>()
+                stations.add(
+                     RadioStation(
+                        name = "SUARA SURABAYA",
+                          streamUrl = "https://c5.siar.us/proxy/ssfm/stream"
+    )
+)
 
+                stations.add(
+                    RadioStation(
+                       name = "WIJAYA FM",
+                          streamUrl = "http://wijayafm.onlivestreaming.net:9880/stream"
+    )
+)
                 for (i in 0 until jsonArray.length()) {
 
                     val station =
