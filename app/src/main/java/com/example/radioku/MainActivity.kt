@@ -1,6 +1,8 @@
 package com.example.radioku
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.OutlinedTextField
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -62,7 +64,7 @@ class MainActivity : ComponentActivity() {
     private var isLoading by mutableStateOf(true)
 
     private var errorMessage by mutableStateOf("")
-
+    private var searchText by mutableStateOf("")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -96,6 +98,10 @@ class MainActivity : ComponentActivity() {
                 isPlaying = isPlaying,
                 isLoading = isLoading,
                 errorMessage = errorMessage,
+                searchText = searchText,
+                onSearchTextChange = {
+                      searchText = it
+        },
 
                 onRadioSelected = { radio ->
                     selectedRadio = radio
@@ -289,9 +295,12 @@ fun RadioKuApp(
     isPlaying: Boolean,
     isLoading: Boolean,
     errorMessage: String,
+    searchText: String,
+    onSearchTextChange: (String) -> Unit,
     onRadioSelected: (RadioStation) -> Unit,
     onPlayPause: () -> Unit
-) {
+)
+{
 
     MaterialTheme {
 
@@ -399,7 +408,22 @@ fun RadioKuApp(
             Spacer(
                 modifier = Modifier.height(12.dp)
             )
+         OutlinedTextField(
+             value = searchText,
+            onValueChange = onSearchTextChange,
+           modifier = Modifier.fillMaxWidth(),
+           label = {
+                Text("Cari radio")
+    },
+    placeholder = {
+        Text("Ketik nama radio...")
+    },
+    singleLine = true
+)
 
+Spacer(
+    modifier = Modifier.height(12.dp)
+)
             if (isLoading) {
 
                 CircularProgressIndicator()
@@ -418,7 +442,15 @@ fun RadioKuApp(
                     text = errorMessage
                 )
 
-           } else {
+          } else {
+
+    val filteredRadioStations =
+        radioStations.filter { radio ->
+            radio.name.contains(
+                searchText,
+                ignoreCase = true
+            )
+        }
 
     LazyColumn(
         modifier = Modifier
@@ -426,7 +458,7 @@ fun RadioKuApp(
             .weight(1f)
     ) {
 
-        items(radioStations) { radio ->
+        items(filteredRadioStations) { radio ->
 
             Button(
                 onClick = {
