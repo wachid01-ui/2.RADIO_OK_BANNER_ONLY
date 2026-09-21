@@ -74,7 +74,7 @@ class MainActivity : ComponentActivity() {
     private var searchText by mutableStateOf("")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+    MobileAds.initialize(this)
         val sessionToken = SessionToken(
             this,
             android.content.ComponentName(
