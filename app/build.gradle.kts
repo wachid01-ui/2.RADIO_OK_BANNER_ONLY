@@ -37,5 +37,6 @@ dependencies {
 
     implementation("androidx.media3:media3-exoplayer:1.8.0")
     implementation("androidx.media3:media3-session:1.8.0")
+    implementation("com.google.android.gms:play-services-ads:24.6.0")
 }
 
