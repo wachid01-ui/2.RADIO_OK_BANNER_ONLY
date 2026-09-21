@@ -5,6 +5,9 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.OutlinedTextField
 import android.os.Bundle
 import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AdView
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
