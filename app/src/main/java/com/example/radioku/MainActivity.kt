@@ -4,6 +4,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.OutlinedTextField
 import android.os.Bundle
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.viewinterop.AndroidView
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AdView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -499,4 +505,34 @@ Spacer(
 }
         }
     }
+}
+
+@Composable
+fun BannerAdView() {
+
+    val context = LocalContext.current
+
+    AndroidView(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentSize(),
+        factory = {
+            AdView(context).apply {
+
+                setAdSize(
+                    AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
+                        context,
+                        360
+                    )
+                )
+
+                adUnitId =
+                    "ca-app-pub-3940256099942544/9214589741"
+
+                loadAd(
+                    AdRequest.Builder().build()
+                )
+            }
+        }
+    )
 }
