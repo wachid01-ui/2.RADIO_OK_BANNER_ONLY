@@ -1,4 +1,5 @@
 package com.example.radioku
+
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
@@ -73,9 +74,12 @@ class MainActivity : ComponentActivity() {
 
     private var errorMessage by mutableStateOf("")
     private var searchText by mutableStateOf("")
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-    MobileAds.initialize(this)
+
+        MobileAds.initialize(this)
+
         val sessionToken = SessionToken(
             this,
             android.content.ComponentName(
@@ -109,7 +113,7 @@ class MainActivity : ComponentActivity() {
                 searchText = searchText,
                 onSearchTextChange = {
                       searchText = it
-        },
+                },
 
                 onRadioSelected = { radio ->
                     selectedRadio = radio
@@ -183,24 +187,24 @@ class MainActivity : ComponentActivity() {
                         station.optString("url_resolved")
                            .ifEmpty {
                                station.optString("url")
-        }
+                           }
 
-                  val lastCheckOk =
-                      station.optInt("lastcheckok", 0)
+                    val lastCheckOk =
+                        station.optInt("lastcheckok", 0)
 
-                  if (
-                     name.isNotBlank() &&
-                     streamUrl.isNotBlank() &&
-                     lastCheckOk == 1
-                 ) {
+                    if (
+                        name.isNotBlank() &&
+                        streamUrl.isNotBlank() &&
+                        lastCheckOk == 1
+                    ) {
 
-                   stations.add(
-                     RadioStation(
-                      name = name,
-                      streamUrl = streamUrl
-                     )
-                 )
-             }
+                        stations.add(
+                            RadioStation(
+                                name = name,
+                                streamUrl = streamUrl
+                            )
+                        )
+                    }
                 }
 
                 runOnUiThread {
@@ -416,22 +420,24 @@ fun RadioKuApp(
             Spacer(
                 modifier = Modifier.height(12.dp)
             )
-         OutlinedTextField(
-             value = searchText,
-            onValueChange = onSearchTextChange,
-           modifier = Modifier.fillMaxWidth(),
-           label = {
-                Text("Cari radio")
-    },
-    placeholder = {
-        Text("Ketik nama radio...")
-    },
-    singleLine = true
-)
 
-Spacer(
-    modifier = Modifier.height(12.dp)
-)
+            OutlinedTextField(
+                value = searchText,
+                onValueChange = onSearchTextChange,
+                modifier = Modifier.fillMaxWidth(),
+                label = {
+                    Text("Cari radio")
+                },
+                placeholder = {
+                    Text("Ketik nama radio...")
+                },
+                singleLine = true
+            )
+
+            Spacer(
+                modifier = Modifier.height(12.dp)
+            )
+
             if (isLoading) {
 
                 CircularProgressIndicator()
@@ -450,61 +456,67 @@ Spacer(
                     text = errorMessage
                 )
 
-          } else {
+            } else {
 
-    val filteredRadioStations =
-        radioStations.filter { radio ->
-            radio.name.contains(
-                searchText,
-                ignoreCase = true
-            )
-        }
-
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxWidth()
-            .weight(1f)
-    ) {
-
-        items(filteredRadioStations) { radio ->
-
-            Button(
-                onClick = {
-                    onRadioSelected(radio)
-                },
-
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-
-                colors =
-                    if (radio == selectedRadio) {
-
-                        ButtonDefaults.buttonColors(
-                            containerColor =
-                                Color(0xFF2E7D32),
-                            contentColor =
-                                Color.White
-                        )
-
-                    } else {
-
-                        ButtonDefaults.buttonColors(
-                            containerColor =
-                                Color(0xFF757575),
-                            contentColor =
-                                Color.White
+                val filteredRadioStations =
+                    radioStations.filter { radio ->
+                        radio.name.contains(
+                            searchText,
+                            ignoreCase = true
                         )
                     }
-            ) {
 
-                Text(
-                    text = radio.name
-                )
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) {
+
+                    items(filteredRadioStations) { radio ->
+
+                        Button(
+                            onClick = {
+                                onRadioSelected(radio)
+                            },
+
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+
+                            colors =
+                                if (radio == selectedRadio) {
+
+                                    ButtonDefaults.buttonColors(
+                                        containerColor =
+                                            Color(0xFF2E7D32),
+                                        contentColor =
+                                            Color.White
+                                    )
+
+                                } else {
+
+                                    ButtonDefaults.buttonColors(
+                                        containerColor =
+                                            Color(0xFF757575),
+                                        contentColor =
+                                            Color.White
+                                    )
+                                }
+                        ) {
+
+                            Text(
+                                text = radio.name
+                            )
+                        }
+                    }
+                }
             }
-        }
-    }
-}
+
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
+
+            BannerAdView()
         }
     }
 }
@@ -519,6 +531,7 @@ fun BannerAdView() {
             .fillMaxWidth()
             .wrapContentSize(),
         factory = {
+
             AdView(context).apply {
 
                 setAdSize(
