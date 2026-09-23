@@ -411,12 +411,7 @@ fun RadioKuApp(
                 modifier = Modifier.height(24.dp)
             )
 
-            Text(
-                text = "Pilih Radio Indonesia",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
-
+            
             Spacer(
                 modifier = Modifier.height(12.dp)
             )
