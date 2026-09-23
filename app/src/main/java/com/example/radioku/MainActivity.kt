@@ -2,6 +2,8 @@ package com.example.radioku
 
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.clickable
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.OutlinedTextField
 import android.os.Bundle
@@ -450,49 +452,46 @@ fun RadioKuApp(
                     }
 
                 LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                ) {
+    modifier = Modifier
+        .fillMaxWidth()
+        .weight(1f)
+) {
 
-                    items(filteredRadioStations) { radio ->
+    items(filteredRadioStations) { radio ->
 
-                        Button(
-                            onClick = {
-                                onRadioSelected(radio)
-                            },
-
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-
-                            colors =
-                                if (radio == selectedRadio) {
-
-                                    ButtonDefaults.buttonColors(
-                                        containerColor =
-                                            Color(0xFF2E7D32),
-                                        contentColor =
-                                            Color.White
-                                    )
-
-                                } else {
-
-                                    ButtonDefaults.buttonColors(
-                                        containerColor =
-                                            Color(0xFF757575),
-                                        contentColor =
-                                            Color.White
-                                    )
-                                }
-                        ) {
-
-                            Text(
-                                text = radio.name
-                            )
-                        }
-                    }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    onRadioSelected(radio)
                 }
+                .padding(
+                    vertical = 12.dp,
+                    horizontal = 8.dp
+                )
+        ) {
+
+            Text(
+                text = radio.name,
+                fontSize = 16.sp,
+                fontWeight =
+                    if (radio == selectedRadio) {
+                        FontWeight.Bold
+                    } else {
+                        FontWeight.Normal
+                    },
+                color =
+                    if (radio == selectedRadio) {
+                        Color(0xFF2E7D32)
+                    } else {
+                        Color.Unspecified
+                    }
+            )
+
+            HorizontalDivider()
+        }
+    }
+}
             }
 
             Spacer(
