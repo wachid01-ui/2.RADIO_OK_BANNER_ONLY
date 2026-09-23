@@ -136,7 +136,7 @@ class MainActivity : ComponentActivity() {
             try {
 
                 val url = URL(
-                    "https://de1.api.radio-browser.info/json/stations/bycountrycodeexact/ID?hidebroken=true&limit=500"
+                    "https://de1.api.radio-browser.info/json/stations/bycountrycodeexact/ID?hidebroken=true&limit=1000"
                 )
 
                 val connection =
