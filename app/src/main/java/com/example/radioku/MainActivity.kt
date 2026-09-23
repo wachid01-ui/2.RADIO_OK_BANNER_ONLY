@@ -324,20 +324,8 @@ fun RadioKuApp(
             verticalArrangement = Arrangement.Top
         ) {
 
-            Text(
-                text = "RADIOKU",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(
-                modifier = Modifier.height(8.dp)
-            )
-
-            Text(
-                text = "Radio Streaming Indonesia",
-                fontSize = 16.sp
-            )
+            
+                    
 
             Spacer(
                 modifier = Modifier.height(24.dp)
