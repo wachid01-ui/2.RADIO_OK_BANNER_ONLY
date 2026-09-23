@@ -328,7 +328,7 @@ fun RadioKuApp(
                     
 
             Spacer(
-                modifier = Modifier.height(24.dp)
+                modifier = Modifier.height(8.dp)
             )
 
             Card(
@@ -396,7 +396,7 @@ fun RadioKuApp(
             }
 
             Spacer(
-                modifier = Modifier.height(24.dp)
+                modifier = Modifier.height(8.dp)
             )
 
             
